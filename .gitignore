@@ -1,4 +1,4 @@
-.env
+# .env (Removed to allow tracking)
 __pycache__/
 *.pyc
 output/
