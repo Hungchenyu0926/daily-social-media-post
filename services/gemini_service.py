@@ -103,8 +103,9 @@ def generate_image_prompts(article: str) -> list[dict]:
 
 
 def generate_image(prompt: str, filename: str = "generated_image.png") -> Path:
-    """使用 Gemini 2.0 Flash 的原生圖片生成功能。"""
-    url = f"{BASE_URL}/models/gemini-2.0-flash-exp-image-generation:generateContent?key={API_KEY}"
+    """使用 Gemini 3 Pro Image (Nano Banana Pro) 的原生圖片生成功能。"""
+    # Nano Banana Pro ID: gemini-3-pro-image-preview
+    url = f"{BASE_URL}/models/gemini-3-pro-image-preview:generateContent?key={API_KEY}"
 
     payload = {
         "contents": [

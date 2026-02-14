@@ -44,6 +44,25 @@ def _raise_with_details(resp):
         resp.raise_for_status()
 
 
+
+# 設定 Retry 機制
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+def _get_session():
+    session = requests.Session()
+    retry = Retry(
+        total=3,
+        read=3,
+        connect=3,
+        backoff_factor=1,
+        status_forcelist=[500, 502, 503, 504],
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
+    return session
+
 def post_text_only(message: str, brand: str = "default") -> dict:
     """發布純文字貼文。"""
     token, page_id = _get_config(brand)
@@ -52,10 +71,15 @@ def post_text_only(message: str, brand: str = "default") -> dict:
         "message": message,
         "access_token": token,
     }
-    resp = requests.post(url, data=payload, timeout=30)
-    if not resp.ok:
-        _raise_with_details(resp)
-    return resp.json()
+    
+    session = _get_session()
+    try:
+        resp = session.post(url, data=payload, timeout=60)
+        if not resp.ok:
+            _raise_with_details(resp)
+        return resp.json()
+    except requests.exceptions.RequestException as e:
+         raise RuntimeError(f"網路連線失敗，請檢查您的網路狀態。\n錯誤詳情: {e}")
 
 
 def post_with_image(message: str, image_path: str, brand: str = "default") -> dict:
@@ -67,17 +91,23 @@ def post_with_image(message: str, image_path: str, brand: str = "default") -> di
         raise FileNotFoundError(f"圖片檔案不存在：{image_path}")
 
     upload_url = f"{FB_GRAPH_URL}/{page_id}/photos"
-    with open(image_file, "rb") as f:
-        files = {"source": (image_file.name, f, "image/png")}
-        data = {
-            "message": message,
-            "access_token": token,
-        }
-        resp = requests.post(upload_url, data=data, files=files, timeout=60)
+    
+    session = _get_session()
+    # 圖片上傳通常需要較長時間，設定 120 秒 timeout
+    try:
+        with open(image_file, "rb") as f:
+            files = {"source": (image_file.name, f, "image/png")}
+            data = {
+                "message": message,
+                "access_token": token,
+            }
+            resp = session.post(upload_url, data=data, files=files, timeout=120)
 
-    if not resp.ok:
-        _raise_with_details(resp)
-    return resp.json()
+        if not resp.ok:
+            _raise_with_details(resp)
+        return resp.json()
+    except requests.exceptions.RequestException as e:
+         raise RuntimeError(f"網路連線失敗 (Timeline Timeout)，請檢查您的網路狀態或 VPN。\n錯誤詳情: {e}")
 
 
 def verify_token(brand: str = "default") -> dict:
