@@ -455,8 +455,10 @@ elif st.session_state.current_step == 5:
         st.markdown(f"<div class='article-preview'>{st.session_state.edited_article}</div>", unsafe_allow_html=True)
     with col_img:
         st.markdown("**🖼️ 配圖：**")
+        use_image = False
         if st.session_state.generated_image_path:
             st.image(st.session_state.generated_image_path, use_container_width=True)
+            use_image = st.checkbox("✅ 一併上傳圖片", value=True)
         else:
             st.warning("沒有圖片（將發布純文字貼文）")
 
@@ -489,7 +491,7 @@ elif st.session_state.current_step == 5:
                 try:
                     from services.facebook_service import post_with_image, post_text_only
 
-                    if st.session_state.generated_image_path:
+                    if st.session_state.generated_image_path and use_image:
                         result = post_with_image(
                             st.session_state.edited_article,
                             st.session_state.generated_image_path,
