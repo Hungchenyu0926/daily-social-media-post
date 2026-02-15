@@ -12,12 +12,18 @@ from PIL import Image
 from dotenv import load_dotenv
 
 
+import streamlit as st
 from prompts.article_prompt import get_system_prompt, get_article_prompt
 from prompts.image_prompt import IMAGE_PROMPT_SYSTEM_PROMPT, get_image_prompt_request
 
 load_dotenv()
 
-API_KEY = os.getenv("GEMINI_API_KEY")
+# 改用 st.secrets，若沒有則 fallback 到 os.getenv (相容性)
+try:
+    API_KEY = st.secrets.get("GEMINI_API_KEY")
+except FileNotFoundError:
+    API_KEY = os.getenv("GEMINI_API_KEY")
+
 BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
 # 輸出目錄
@@ -27,6 +33,9 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 
 def _call_gemini(model: str, system_instruction: str, user_prompt: str, response_mime_type: str = None) -> str:
     """呼叫 Gemini REST API 生成文字"""
+    if not API_KEY:
+        raise ValueError("缺少 GEMINI_API_KEY！請檢查 secrets.toml 或 .env")
+
     url = f"{BASE_URL}/models/{model}:generateContent?key={API_KEY}"
 
     payload = {

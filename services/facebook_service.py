@@ -13,20 +13,22 @@ FB_GRAPH_URL = f"https://graph.facebook.com/{FB_API_VERSION}"
 
 
 
+import streamlit as st
+
 def _get_config(brand: str = "default"):
     """取得 Facebook 設定 (根據品牌)"""
     if brand == "houjiazai":
-        token = os.getenv("FB_PAGE_ACCESS_TOKEN_HOUJIAZAI")
-        page_id = os.getenv("FB_PAGE_ID_HOUJIAZAI")
+        token = st.secrets.get("FB_PAGE_ACCESS_TOKEN_HOUJIAZAI")
+        page_id = st.secrets.get("FB_PAGE_ID_HOUJIAZAI")
         brand_name = "厚家載藥師"
     else:
-        token = os.getenv("FB_PAGE_ACCESS_TOKEN")
-        page_id = os.getenv("FB_PAGE_ID")
+        token = st.secrets.get("FB_PAGE_ACCESS_TOKEN")
+        page_id = st.secrets.get("FB_PAGE_ID")
         brand_name = "永芯長照"
 
     if not token or not page_id:
         raise ValueError(
-            f"缺少 {brand_name} 的 Facebook 設定！請在 .env 檔設定對應的 Token 和 Page ID"
+            f"缺少 {brand_name} 的 Facebook 設定！請在 secrets.toml 設定對應的 Token 和 Page ID"
         )
     print(f"Debug: Loaded config for brand='{brand}'. Page ID: {page_id}")
     return token, page_id

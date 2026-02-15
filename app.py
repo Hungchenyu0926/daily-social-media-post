@@ -160,20 +160,22 @@ with st.sidebar:
     st.divider()
 
     # 檢查 API 設定狀態
-    import os
-    from dotenv import load_dotenv
-    load_dotenv(override=True)
+    
+    # 移除 load_dotenv()，改用 st.secrets
+    # import os
+    # from dotenv import load_dotenv
+    # load_dotenv(override=True)
 
-    gemini_ok = bool(os.getenv("GEMINI_API_KEY"))
+    gemini_ok = bool(st.secrets.get("GEMINI_API_KEY"))
 
     
     # 檢查當前選擇品牌的 FB 設定
     if st.session_state.brand == "houjiazai":
-        fb_token = os.getenv("FB_PAGE_ACCESS_TOKEN_HOUJIAZAI")
-        fb_page = os.getenv("FB_PAGE_ID_HOUJIAZAI")
+        fb_token = st.secrets.get("FB_PAGE_ACCESS_TOKEN_HOUJIAZAI")
+        fb_page = st.secrets.get("FB_PAGE_ID_HOUJIAZAI")
     else:
-        fb_token = os.getenv("FB_PAGE_ACCESS_TOKEN")
-        fb_page = os.getenv("FB_PAGE_ID")
+        fb_token = st.secrets.get("FB_PAGE_ACCESS_TOKEN")
+        fb_page = st.secrets.get("FB_PAGE_ID")
 
     fb_ok = bool(fb_token) and bool(fb_page)
 
@@ -181,7 +183,7 @@ with st.sidebar:
     st.markdown(f"- Facebook API ({brand_map[st.session_state.brand]}): {'✅ 已設定' if fb_ok else '❌ 未設定'}")
 
     if not gemini_ok or not fb_ok:
-        st.warning(f"請在 `.env` 檔案中設定 {brand_map[st.session_state.brand]} 的 API 金鑰")
+        st.warning(f"請在 secrets.toml 設定 {brand_map[st.session_state.brand]} 的 API 金鑰")
 
     st.divider()
 
@@ -504,7 +506,7 @@ elif st.session_state.current_step == 5:
                     st.rerun()
                 except Exception as e:
                     st.error(f"發布失敗：{e}")
-                    st.info("💡 請確認 .env 中的 FB_PAGE_ACCESS_TOKEN 和 FB_PAGE_ID 是否正確。")
+                    st.info("💡 請確認 secrets.toml 中的 FB_PAGE_ACCESS_TOKEN 和 FB_PAGE_ID 是否正確。")
 
     else:
         # 發布成功
