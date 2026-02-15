@@ -74,7 +74,7 @@ def generate_article(raw_material: str, brand: str = "default") -> str:
     """根據原始素材生成衛教貼文。"""
     system_prompt = get_system_prompt(brand)
     return _call_gemini(
-        model="gemini-2.0-flash",
+        model="gemini-2.5-flash",
         system_instruction=system_prompt,
         user_prompt=get_article_prompt(raw_material),
     )
@@ -84,7 +84,7 @@ def generate_article(raw_material: str, brand: str = "default") -> str:
 def generate_image_prompts(article: str) -> list[dict]:
     """根據文章生成 3 組圖片 Prompt（JSON 格式）。"""
     text = _call_gemini(
-        model="gemini-2.0-flash",
+        model="gemini-2.5-flash",
         system_instruction=IMAGE_PROMPT_SYSTEM_PROMPT,
         user_prompt=get_image_prompt_request(article),
         response_mime_type="application/json",
